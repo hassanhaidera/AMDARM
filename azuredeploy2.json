@@ -1,0 +1,95 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": { 
+        "storageAccountName ": {
+        "type": "string",
+        "metadata": {
+            "description": "storage Account Name"
+        
+      },
+        "minLength":3,
+        "maxLength":24
+    },"sqlAdministratorLogin": {
+      "type": "string",
+      "metadata": {
+        "description": "The administrator username of the SQL Server."
+      }
+    },
+    "sqlAdministratorPassword": {
+      "type": "secureString",
+      "metadata": {
+        "description": "The administrator password of the SQL Server."}
+    },
+    "databasesName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the Database."}
+    }},
+    "resources": [{
+        "name": "[parameters('storageAccountName ')]",
+        "type": "Microsoft.Storage/storageAccounts",
+        "apiVersion": "2021-04-01",
+        "tags": {
+            "displayName": "storageaccount1"
+        },
+        
+        "location": "[resourceGroup().location]",
+        "kind": "BlockBlobStorage",
+        "sku": {
+            "name": "Premium_LRS",
+            "tier": "Premium"
+        },
+        "properties": {
+             "minimumTlsVersion": "TLS1_0",
+                "allowBlobPublicAccess": true,
+                "isHnsEnabled": true,
+                "networkAcls": {
+                    "bypass": "AzureServices",
+                    "virtualNetworkRules": [],
+                    "ipRules": [],
+                    "defaultAction": "Allow"
+        }
+    
+    }
+    },{ 
+        "name":"[concat(parameters('storageAccountName '),'ADF')]",
+        "type": "Microsoft.DataFactory/factories",
+        "apiVersion": "2018-06-01",
+        "location": "[resourceGroup().location]",
+        "identity": {
+        "type": "SystemAssigned"
+    }}, 
+    {"name":"[concat(parameters('storageAccountName '),'sqlserv')]",
+        "type": "Microsoft.Sql/servers",
+        "apiVersion": "2021-11-01-preview",
+        "location": "[resourceGroup().location]",
+        "properties": {
+        "administratorLogin": "[parameters('sqlAdministratorLogin')]",
+        "administratorLoginPassword": "[parameters('sqlAdministratorPassword')]",
+        "version": "12.0",
+        "publicNetworkAccess": "Enabled",
+        "restrictOutboundNetworkAccess": "Disabled"
+      }
+    },{
+         "type": "Microsoft.Sql/servers/databases",
+      "apiVersion": "2021-11-01-preview",
+      "name": "[format('{0}/{1}',concat(parameters('storageAccountName '),'sqlserv'), parameters('databasesName'))]",
+      "location": "[resourceGroup().location]",
+      "sku": {
+        "name": "DataWarehouse",
+        "tier": "DataWarehouse",
+        "capacity": 900
+      },
+      "properties": {
+        "collation": "[parameters('storageAccountName ')]",
+        "catalogCollation": "[parameters('storageAccountName ')]",
+        "readScale": "Disabled",
+        "requestedBackupStorageRedundancy": "Local",
+        "isLedgerOn": false
+    },
+         "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers', concat(parameters('storageAccountName '),'sqlserv'))]"
+      ]
+  
+}]}
