@@ -1,0 +1,29 @@
+#link to blob
+{
+    "name": "",
+    "type": "Microsoft.DataFactory/factories/linkedservices",
+    "properties": {
+        "annotations": [],
+        "type": "AzureBlobFS",
+        "typeProperties": {
+            "url": "",
+            "encryptedCredential": ""
+        }
+    }
+}
+
+
+
+#link to sql database
+{
+    "name": "",
+    "type": "Microsoft.DataFactory/factories/linkedservices",
+    "properties": {
+        "annotations": [],
+        "type": "AzureSqlDatabase",
+        "typeProperties": {
+            "connectionString": "",
+            "encryptedCredential": ""
+        }
+    }
+}
